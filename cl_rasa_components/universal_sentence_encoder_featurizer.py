@@ -52,3 +52,14 @@ class UniversalSentenceEncoderFeaturizer(Featurizer):
         features = self._combine_with_existing_text_features(message, feature_vector)
         # Set the feature, overwriting any existing `text_features`
         message.set("text_features", features)
+
+    @classmethod
+    def load(cls, model_dir=None, model_metadata=None, cached_component=None,
+             **kwargs):
+        """Load this component from file."""
+
+        if cached_component:
+            return cached_component
+        else:
+            component_config = model_metadata.for_component(cls.name)
+            return cls(component_config)
