@@ -1,3 +1,12 @@
+"""
+[Universal Sentence Encoder](https://arxiv.org/abs/1803.11175) featurizer
+
+From [this](https://scalableminds.com/blog/MachineLearning/2018/08/rasa-universal-sentence-encoder/) blog post
+
+Thanks Scalable Minds - we should probably tell them about this
+https://scalableminds.com/#contact-us
+"""
+
 from rasa_nlu.featurizers import Featurizer
 
 import tensorflow_hub as hub
