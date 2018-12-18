@@ -8,32 +8,32 @@ _Viribus Innatis_ means "innate abilities" in Latin. It's a joke...
 
 "Rasa" comes from "tabula rasa" - _blank slate_ in Latin. We (just Sam) thought it would be funny for this project to have the opposite name, since this is meant to be a suite of tools to fill in functionality for Rasa... that is, make it a not-blank-slate. So "Innate Abilities" -> Viribus Innatis.
 
-## Featurizers
-
-Currently the only implemented component is a featurizer
-
-* `universal_sentence_encoder_featurizer` - Pulls the smaller USE model from TF HUB and embeds inputs as document vectors, and that vector gets sent downstream to be used as a feature.
-
-### Planned usage
+## Usage
 
 `$ pip install innatis`
 
-Then add to your pipeline in `rasa_config.yml`. Example:
+Then add to your pipeline in your `rasa_config.yml`. Example pipeline can be found in `sample_rasa_innatis_config.yml`.
 
-```yml
-language: "en"
+## Components
 
-pipeline:
-- name: "intent_featurizer_count_vectors"
-- name: "innatis.featurizers.universal_sentence_encoder_featurizer.UniversalSentenceEncoderFeaturizer"
-- name: "intent_classifier_tensorflow_embedding"
-    intent_tokenization_flag: true
-    intent_split_symbol: "."
-    "epochs": 200
-    "droprate": 0.5
-- name: "nested_entity_extractor"
+### Extractors
+
+* `composite_entity_extractor` - Given entities extracted by another extractor (`ner_crf` seems to be the best for now), splits them into composite entities, similar to [DialogFlow](https://dialogflow.com/docs/entities/developer-entities#developer_composite).
+
+### Featurizers
+
+* `universal_sentence_encoder_featurizer` - Pulls the smaller USE model from TF HUB and embeds inputs as document vectors, and that vector gets sent downstream to be used as a feature.
+
+## Development
+
+```sh
+git clone git@github.com:Revmaker/innatis.git
+cd innatis
+pipenv install --skip-lock
+# you don't _need_ to skip-lock, if you are immortal and patient https://github.com/pypa/pipenv/issues/2284#issuecomment-397867839
+
+# do some stuff
+# write some tests
+
+pipenv run python test.py
 ```
-
-### Questions
-
-Can the Rasa pipeline handle arbitrary components? That is, can we add `augmentors`, `recommenders`, etc.?

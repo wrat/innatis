@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+scikit-learn = "*"
+scipy = "*"
+sklearn-crfsuite = "*"
+tensorflow = "*"
+"word2number" = "*"
+rasa_nlu = "==0.13.8"
+
+[dev-packages]
+
+[requires]
+python_version = "3.6"
