@@ -24,7 +24,6 @@ from typing import Text
 from rasa_nlu import utils
 from rasa_nlu.extractors import EntityExtractor
 from rasa_nlu.training_data import Message
-from rasa_nlu.training_data import TrainingData
 from rasa_nlu.utils import write_json_to_file
 
 from word2number import w2n
@@ -53,9 +52,10 @@ class CompositeEntityExtractor(EntityExtractor):
         }
 
     def train(self, training_data, cfg, **kwargs):
-        # type: (TrainingData) -> None
         self.add_lookup_tables(training_data.lookup_tables)
-        ce = training_data.composite_entities
+        # ce = training_data.composite_entities
+        # @Ayobami - AFAICT training_data.composite_entities didn't do much
+        ce = []
         self.composite_entities['composite_entities'] = ce
 
     def process(self, message, **kwargs):
