@@ -12,7 +12,7 @@ _Viribus Innatis_ means "innate abilities" in Latin. It's a joke...
 
 `$ pip install innatis`
 
-Then add to your pipeline in your `rasa_config.yml`. Example pipeline can be found in `sample_rasa_innatis_config.yml`.
+Then add to your pipeline in your `rasa_config.yml`. Example pipeline can be found in [`sample_rasa_innatis_config.yml`](sample_rasa_innatis_config.yml).
 
 ## Components
 
@@ -30,7 +30,8 @@ Then add to your pipeline in your `rasa_config.yml`. Example pipeline can be fou
 git clone git@github.com:Revmaker/innatis.git
 cd innatis
 pipenv install --skip-lock
-# you don't _need_ to skip-lock, if you are immortal and patient https://github.com/pypa/pipenv/issues/2284#issuecomment-397867839
+# you don't _need_ to skip-lock, if you are immortal and patient
+# see https://github.com/pypa/pipenv/issues/2284#issuecomment-397867839
 
 # do some stuff
 # write some tests
