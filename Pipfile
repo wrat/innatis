@@ -12,6 +12,7 @@ tensorflow = "*"
 rasa_nlu = "==0.13.8"
 
 [dev-packages]
+pytest = "*"
 
 [requires]
 python_version = "3.6"
