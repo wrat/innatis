@@ -1,6 +1,6 @@
 # Innatis
 
-This is a library of custom Rasa components that we (CarLabs) are building.
+This is a library of custom [Rasa NLU](https://github.com/RasaHQ/rasa_nlu/) components that we (CarLabs) are building.
 
 ## What does the name mean?
 
