@@ -40,7 +40,8 @@ COMPOSITE_ENTITIES_FILE_NAME = "composite_entities.json"
 
 class CompositeEntityExtractor(EntityExtractor):
     name = "composite_entity_extractor"
-    provides = ["entities"]
+    requires = ["entities"]
+    provides = ["composite_entities"]
 
     def __init__(self, component_config=None, composite_entities=None):
         # type: (Optional[Dict[Text, Text]]) -> None
