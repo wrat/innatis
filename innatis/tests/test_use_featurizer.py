@@ -10,11 +10,13 @@ python -m rasa_nlu.train -c sample_configs/config_composite_entities.yml \
 to train a model on the sample data
 
 """
-
-from rasa_nlu.model import Interpreter
 import json
 import pytest
+from innatis.featurizers import UniversalSentenceEncoderFeaturizer
+from rasa_nlu.model import Interpreter
 
+def test_it_instantiates():
+    assert UniversalSentenceEncoderFeaturizer({}) is not None
 
 @pytest.mark.slow
 def test_use_featurizer():
@@ -27,5 +29,3 @@ def test_use_featurizer():
     # todo
     # actually test something
 
-if __name__ == "__main__":
-    test_use_featurizer()
