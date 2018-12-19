@@ -29,12 +29,22 @@ Then add to your pipeline in your `rasa_config.yml`. Example pipeline can be fou
 ```sh
 git clone git@github.com:Revmaker/innatis.git
 cd innatis
-pipenv install --skip-lock
-# you don't _need_ to skip-lock, if you are immortal and patient
-# see https://github.com/pypa/pipenv/issues/2284#issuecomment-397867839
+pipenv install
+# pipenv install --skip-lock if locking takes too long
 
 # do some stuff
 # write some tests
 
 pipenv run python test.py
+```
+
+Dependencies suck, as is always the case in Python. I started out using `pipenv` because I thought that was _the_ package manager for Python. But I guess you need to put dependencies in the `install_requires` section of `setup.py`. So, the (currently manual, but automatable) process for moving dependencies from the `Pipfile` to `setup.py` is:
+
+```sh
+$ cd innatis
+# you are now in parent/innatis, not innatis/innatis
+$ python ir_from_pipfile.py | pbcopy
+['scikit-learn', 'scipy', 'sklearn-crfsuite', 'tensorflow', 'word2number', 'rasa_nlu==0.13.8', 'tensorflow-hub', 'spacy']
+
+# that array is copied; paste it into setup.py
 ```
