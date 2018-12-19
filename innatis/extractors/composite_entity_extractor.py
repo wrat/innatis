@@ -23,7 +23,7 @@ from typing import Text
 
 from rasa_nlu import utils
 from rasa_nlu.extractors import EntityExtractor
-from rasa_nlu.training_data import Message
+from rasa_nlu.training_data import Message, TrainingData
 from rasa_nlu.utils import write_json_to_file
 
 from word2number import w2n
@@ -47,10 +47,15 @@ class CompositeEntityExtractor(EntityExtractor):
         # type: (Optional[Dict[Text, Text]]) -> None
         super(CompositeEntityExtractor, self).__init__(component_config)
 
-        self.composite_entities = composite_entities if composite_entities else {
-            'lookup_tables': [],
-            'composite_entities': []
-        }
+        if composite_entities:
+            self.composite_entities = composite_entities
+        else:
+            self.composite_entities = {
+                'lookup_tables': [],
+                'composite_entities': []
+            }
+
+        TrainingData.composite_entities = []
 
     def train(self, training_data, cfg, **kwargs):
         self.add_lookup_tables(training_data.lookup_tables)
@@ -61,6 +66,7 @@ class CompositeEntityExtractor(EntityExtractor):
 
     def process(self, message, **kwargs):
         # type: (Message, **Any) -> None
+        print(TrainingData.composite_entities)
         entities = message.get("entities", [])[:]
         self.split_composite_entities(entities)
         message.set("entities", entities, add_to_output=True)
@@ -68,9 +74,11 @@ class CompositeEntityExtractor(EntityExtractor):
     def persist(self, model_dir):
         # type: (Text) -> Optional[Dict[Text, Any]]
         if self.composite_entities:
-            composite_entities_file = os.path.join(model_dir,
-                                                COMPOSITE_ENTITIES_FILE_NAME)
-            write_json_to_file(composite_entities_file, self.composite_entities,
+            composite_entities_file = os.path \
+                                        .join(model_dir,
+                                              COMPOSITE_ENTITIES_FILE_NAME)
+            write_json_to_file(composite_entities_file,
+                               self.composite_entities,
                                separators=(',', ': '))
 
         return {"composite_entities_file": COMPOSITE_ENTITIES_FILE_NAME}
@@ -85,7 +93,8 @@ class CompositeEntityExtractor(EntityExtractor):
             # type: (...) -> CompositeEntitiesMapper
 
         meta = model_metadata.for_component(cls.name)
-        file_name = meta.get("composite_entities_file", COMPOSITE_ENTITIES_FILE_NAME)
+        file_name = meta.get("composite_entities_file",
+                             COMPOSITE_ENTITIES_FILE_NAME)
         composite_entities_file = os.path.join(model_dir, file_name)
 
         if os.path.isfile(composite_entities_file):
@@ -261,7 +270,8 @@ class CompositeEntityExtractor(EntityExtractor):
     def split_composite_entities(self, entities):
         for each_entity in entities:
             entity = each_entity["entity"]
-            for composite_entry in self.composite_entities['composite_entities']:
+            ces = self.composite_entities['composite_entities']
+            for composite_entry in ces:
                 if(composite_entry['name'] == entity):
                     self.split_composite_entity(composite_entry, each_entity)
 

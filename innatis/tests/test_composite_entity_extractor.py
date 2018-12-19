@@ -3,9 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from innatis.extractors import (
-    CompositeEntityExtractor
-)
+from innatis.extractors import CompositeEntityExtractor
 
 entities = [
     {
