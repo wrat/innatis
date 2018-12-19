@@ -25,7 +25,3 @@ def test_use_featurizer():
 
     result = interpreter.parse(message)
     print(json.dumps(result, indent=2))
-
-    # todo
-    # actually test something
-
