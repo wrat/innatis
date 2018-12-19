@@ -88,7 +88,7 @@ composite_entities = {
 }
 
 
-def test_composite_entity_extractor_instantiates():
+def test_it_instantiates():
     assert CompositeEntityExtractor(
         composite_entities=composite_entities
     ) is not None
@@ -121,6 +121,3 @@ def test_composite_entities():
             "number": 2
         }
     }
-
-test_composite_entity_extractor_instantiates()
-test_composite_entities()
