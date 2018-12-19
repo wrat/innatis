@@ -87,10 +87,12 @@ composite_entities = {
     ]
 }
 
+
 def test_composite_entity_extractor_instantiates():
     assert CompositeEntityExtractor(
         composite_entities=composite_entities
     ) is not None
+
 
 def test_composite_entities():
     CompositeEntityExtractor(

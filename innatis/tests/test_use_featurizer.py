@@ -15,8 +15,11 @@ import pytest
 from innatis.featurizers import UniversalSentenceEncoderFeaturizer
 from rasa_nlu.model import Interpreter
 
+
+@pytest.mark.slow
 def test_it_instantiates():
     assert UniversalSentenceEncoderFeaturizer({}) is not None
+
 
 @pytest.mark.slow
 def test_use_featurizer():
