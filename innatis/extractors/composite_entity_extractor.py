@@ -92,8 +92,9 @@ class CompositeEntityExtractor(EntityExtractor):
             # type: (...) -> CompositeEntitiesMapper
 
         meta = model_metadata.for_component(cls.name)
-        file_name = meta.get("composite_entities_file",
-                             self.COMPOSITE_ENTITIES_FILE_NAME)
+        file_name = meta.get(
+            "composite_entities_file",
+            CompositeEntityExtractor.COMPOSITE_ENTITIES_FILE_NAME)
         composite_entities_file = os.path.join(model_dir, file_name)
 
         if os.path.isfile(composite_entities_file):
