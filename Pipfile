@@ -10,6 +10,8 @@ sklearn-crfsuite = "*"
 tensorflow = "*"
 "word2number" = "*"
 rasa_nlu = "==0.13.8"
+tensorflow-hub = "*"
+spacy = "*"
 
 [dev-packages]
 pytest = "*"
