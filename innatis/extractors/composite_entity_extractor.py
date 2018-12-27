@@ -26,6 +26,8 @@ from rasa_nlu.extractors import EntityExtractor
 from rasa_nlu.training_data import Message
 from rasa_nlu.utils import write_json_to_file
 
+from innatis.extractors.composite_data_extractor import CompositeDataExtractor
+
 from word2number import w2n
 
 try:
@@ -36,7 +38,6 @@ except ImportError:
     from builtins import str as builtin_str
 
 COMPOSITE_ENTITIES_FILE_NAME = "composite_entities.json"
-
 
 class CompositeEntityExtractor(EntityExtractor):
     name = "composite_entity_extractor"
@@ -52,11 +53,10 @@ class CompositeEntityExtractor(EntityExtractor):
         }
 
     def train(self, training_data, cfg, **kwargs):
-        self.add_lookup_tables(training_data.lookup_tables)
-        # ce = training_data.composite_entities
-        # @Ayobami - AFAICT training_data.composite_entities didn't do much
-        ce = []
-        self.composite_entities['composite_entities'] = ce
+        compositeDataExtractor = CompositeDataExtractor()
+        lookup_tables, composite_entities = compositeDataExtractor.get_data(language=cfg.language)
+        self.add_lookup_tables(lookup_tables)
+        self.composite_entities['composite_entities'] = composite_entities
 
     def process(self, message, **kwargs):
         # type: (Message, **Any) -> None
