@@ -37,24 +37,28 @@ except ImportError:
     # Python 3
     from builtins import str as builtin_str
 
-COMPOSITE_ENTITIES_FILE_NAME = "composite_entities.json"
 
 class CompositeEntityExtractor(EntityExtractor):
+    COMPOSITE_ENTITIES_FILE_NAME = "composite_entities.json"
+
     name = "composite_entity_extractor"
-    provides = ["entities"]
+    requires = ["entities"]
+    provides = ["composite_entities"]
 
     def __init__(self, component_config=None, composite_entities=None):
         # type: (Optional[Dict[Text, Text]]) -> None
         super(CompositeEntityExtractor, self).__init__(component_config)
 
-        self.composite_entities = composite_entities if composite_entities else {
-            'lookup_tables': [],
-            'composite_entities': []
-        }
+        self.composite_entities = composite_entities if composite_entities \
+            else {
+                'lookup_tables': [],
+                'composite_entities': []
+            }
 
     def train(self, training_data, cfg, **kwargs):
         compositeDataExtractor = CompositeDataExtractor()
-        lookup_tables, composite_entities = compositeDataExtractor.get_data(language=cfg.language)
+        lookup_tables, composite_entities = compositeDataExtractor.get_data(
+            language=cfg.language)
         self.add_lookup_tables(lookup_tables)
         self.composite_entities['composite_entities'] = composite_entities
 
@@ -67,12 +71,16 @@ class CompositeEntityExtractor(EntityExtractor):
     def persist(self, model_dir):
         # type: (Text) -> Optional[Dict[Text, Any]]
         if self.composite_entities:
-            composite_entities_file = os.path.join(model_dir,
-                                                COMPOSITE_ENTITIES_FILE_NAME)
-            write_json_to_file(composite_entities_file, self.composite_entities,
-                               separators=(',', ': '))
+            composite_entities_file = self._get_ce_path(model_dir)
+            write_json_to_file(
+                composite_entities_file,
+                self.composite_entities,
+                separators=(',', ': '))
 
-        return {"composite_entities_file": COMPOSITE_ENTITIES_FILE_NAME}
+        return {"composite_entities_file": self.COMPOSITE_ENTITIES_FILE_NAME}
+
+    def _get_ce_path(self, model_dir):
+        return os.path.join(model_dir, self.COMPOSITE_ENTITIES_FILE_NAME)
 
     @classmethod
     def load(cls,
@@ -84,7 +92,8 @@ class CompositeEntityExtractor(EntityExtractor):
             # type: (...) -> CompositeEntitiesMapper
 
         meta = model_metadata.for_component(cls.name)
-        file_name = meta.get("composite_entities_file", COMPOSITE_ENTITIES_FILE_NAME)
+        file_name = meta.get("composite_entities_file",
+                             self.COMPOSITE_ENTITIES_FILE_NAME)
         composite_entities_file = os.path.join(model_dir, file_name)
 
         if os.path.isfile(composite_entities_file):
@@ -260,7 +269,8 @@ class CompositeEntityExtractor(EntityExtractor):
     def split_composite_entities(self, entities):
         for each_entity in entities:
             entity = each_entity["entity"]
-            for composite_entry in self.composite_entities['composite_entities']:
+            comp_ents = self.composite_entities['composite_entities']
+            for composite_entry in comp_ents:
                 if(composite_entry['name'] == entity):
                     self.split_composite_entity(composite_entry, each_entity)
 
