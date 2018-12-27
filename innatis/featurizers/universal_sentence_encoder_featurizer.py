@@ -1,7 +1,9 @@
 """
 [Universal Sentence Encoder](https://arxiv.org/abs/1803.11175) featurizer
 
-From [this](https://scalableminds.com/blog/MachineLearning/2018/08/rasa-universal-sentence-encoder/) blog post
+From
+https://scalableminds.com/blog/MachineLearning
+/2018/08/rasa-universal-sentence-encoder/
 
 Thanks Scalable Minds - we should probably tell them about this
 https://scalableminds.com/#contact-us
@@ -25,10 +27,10 @@ class UniversalSentenceEncoderFeaturizer(Featurizer):
     requires = []
     provides = ["text_features"]
 
-
     def __init__(self, component_config):
 
-        super(UniversalSentenceEncoderFeaturizer, self).__init__(component_config)
+        super(UniversalSentenceEncoderFeaturizer,
+              self).__init__(component_config)
 
         # Load the TensorFlow Hub Module with pre-trained weights
         sentence_encoder = hub.Module(self.TFHUB_URL)
@@ -42,7 +44,6 @@ class UniversalSentenceEncoderFeaturizer(Featurizer):
         self.session.run([tf.global_variables_initializer(),
                           tf.tables_initializer()])
 
-
     def train(self, training_data, config, **kwargs):
 
         # Nothing to train, just process all training examples so that the
@@ -50,15 +51,16 @@ class UniversalSentenceEncoderFeaturizer(Featurizer):
         for example in training_data.training_examples:
             self.process(example)
 
-
     def process(self, message, **kwargs):
 
         # Get the sentence encoding by feeding the message text and computing
         # the encoding tensor.
         feature_vector = self.session.run(self.encoding,
-                                          {self.input_string: [message.text]})[0]
+                                          {self.input_string:
+                                           [message.text]})[0]
         # Concatenate the feature vector with any existing text features
-        features = self._combine_with_existing_text_features(message, feature_vector)
+        features = self._combine_with_existing_text_features(
+            message, feature_vector)
         # Set the feature, overwriting any existing `text_features`
         message.set("text_features", features)
 
