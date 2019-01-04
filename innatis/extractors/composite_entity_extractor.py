@@ -37,9 +37,9 @@ except ImportError:
     # Python 3
     from builtins import str as builtin_str
 
+COMPOSITE_ENTITIES_FILE_NAME = "composite_entities.json"
 
 class CompositeEntityExtractor(EntityExtractor):
-    COMPOSITE_ENTITIES_FILE_NAME = "composite_entities.json"
 
     name = "composite_entity_extractor"
     requires = ["entities"]
@@ -78,9 +78,6 @@ class CompositeEntityExtractor(EntityExtractor):
             write_json_to_file(composite_entities_file,
                                self.composite_entities,
                                separators=(',', ': '))
-
-    def _get_ce_path(self, model_dir):
-        return os.path.join(model_dir, self.COMPOSITE_ENTITIES_FILE_NAME)
 
     @classmethod
     def load(cls,
