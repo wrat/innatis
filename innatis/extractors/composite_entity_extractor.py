@@ -26,6 +26,8 @@ from rasa_nlu.extractors import EntityExtractor
 from rasa_nlu.training_data import Message, TrainingData
 from rasa_nlu.utils import write_json_to_file
 
+from innatis.extractors.composite_data_extractor import CompositeDataExtractor
+
 from word2number import w2n
 
 try:
@@ -37,8 +39,8 @@ except ImportError:
 
 COMPOSITE_ENTITIES_FILE_NAME = "composite_entities.json"
 
-
 class CompositeEntityExtractor(EntityExtractor):
+
     name = "composite_entity_extractor"
     requires = ["entities"]
     provides = ["composite_entities"]
@@ -46,7 +48,6 @@ class CompositeEntityExtractor(EntityExtractor):
     def __init__(self, component_config=None, composite_entities=None):
         # type: (Optional[Dict[Text, Text]]) -> None
         super(CompositeEntityExtractor, self).__init__(component_config)
-
         if composite_entities:
             self.composite_entities = composite_entities
         else:
@@ -55,18 +56,15 @@ class CompositeEntityExtractor(EntityExtractor):
                 'composite_entities': []
             }
 
-        TrainingData.composite_entities = []
-
     def train(self, training_data, cfg, **kwargs):
-        self.add_lookup_tables(training_data.lookup_tables)
-        # ce = training_data.composite_entities
-        # @Ayobami - AFAICT training_data.composite_entities didn't do much
-        ce = []
-        self.composite_entities['composite_entities'] = ce
+        compositeDataExtractor = CompositeDataExtractor()
+        lookup_tables, composite_entities = compositeDataExtractor.get_data(
+            language=cfg.language)
+        self.add_lookup_tables(lookup_tables)
+        self.composite_entities['composite_entities'] = composite_entities
 
     def process(self, message, **kwargs):
         # type: (Message, **Any) -> None
-        print(TrainingData.composite_entities)
         entities = message.get("entities", [])[:]
         self.split_composite_entities(entities)
         message.set("entities", entities, add_to_output=True)
@@ -80,8 +78,6 @@ class CompositeEntityExtractor(EntityExtractor):
             write_json_to_file(composite_entities_file,
                                self.composite_entities,
                                separators=(',', ': '))
-
-        return {"composite_entities_file": COMPOSITE_ENTITIES_FILE_NAME}
 
     @classmethod
     def load(cls,
