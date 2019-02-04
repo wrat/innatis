@@ -7,7 +7,6 @@ import pytest
 test_config = ["-m",
                "not slow",
                "--verbose",
-               "--pep8",
                "--color=yes"]
 # To run all tests, including slow ones, use
 # test_config = ["--verbose", "--pep8", "--color=yes"]
