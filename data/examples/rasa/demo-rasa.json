@@ -1,0 +1,283 @@
+{
+    "rasa_nlu_data": {
+      "common_examples": [
+        {
+          "intent": "greet",
+          "text": "hey"
+        },
+        {
+          "intent": "greet",
+          "text": "howdy"
+        },
+        {
+          "intent": "greet",
+          "text": "hey there"
+        },
+        {
+          "intent": "greet",
+          "text": "hello"
+        },
+        {
+          "intent": "greet",
+          "text": "hi"
+        },
+        {
+          "intent": "inform",
+          "text": "i'm looking for a place to eat"
+        },
+        {
+          "entities": [
+            {
+              "end": 36,
+              "entity": "location",
+              "start": 31,
+              "value": "north"
+            }
+          ],
+          "intent": "inform",
+          "text": "i'm looking for a place in the north of"
+        },
+        {
+          "entities": [
+            {
+              "end": 15,
+              "entity": "cuisine",
+              "start": 8,
+              "value": "chinese"
+            }
+          ],
+          "intent": "inform",
+          "text": "show me chinese restaurants"
+        },
+        {
+          "entities": [
+            {
+              "end": 26,
+              "entity": "cuisine",
+              "start": 20,
+              "value": "indian"
+            }
+          ],
+          "intent": "inform",
+          "text": "i am looking for an indian spot"
+        },
+        {
+          "intent": "inform",
+          "text": "search for restaurants"
+        },
+        {
+          "entities": [
+            {
+              "end": 20,
+              "entity": "location",
+              "start": 16,
+              "value": "west"
+            }
+          ],
+          "intent": "inform",
+          "text": "anywhere in the west"
+        },
+        {
+          "entities": [
+            {
+              "end": 7,
+              "entity": "location",
+              "start": 0,
+              "value": "central"
+            },
+            {
+              "end": 14,
+              "entity": "cuisine",
+              "start": 8,
+              "value": "indian"
+            }
+          ],
+          "intent": "inform",
+          "text": "central indian restaurant"
+        },
+        {
+          "entities": [
+            {
+              "end": 28,
+              "entity": "meal",
+              "start": 9,
+              "value": "noodles and chicken"
+            }
+          ],
+          "intent": "order",
+          "text": "Is there noodles and chicken on the menu"
+        },
+        {
+          "entities": [
+            {
+              "end": 16,
+              "entity": "meal",
+              "start": 12,
+              "value": "pork"
+            }
+          ],
+          "intent": "order",
+          "text": "Do you have pork"
+        },
+        {
+          "entities": [
+            {
+              "end": 21,
+              "entity": "meal",
+              "start": 10,
+              "value": "yam and egg"
+            }
+          ],
+          "intent": "order",
+          "text": "Can I get yam and egg"
+        },
+        {
+          "entities": [
+            {
+              "end": 41,
+              "entity": "meal",
+              "start": 25,
+              "value": "rice and chicken"
+            }
+          ],
+          "intent": "order",
+          "text": "I will like to order for rice and chicken"
+        },
+        {
+          "intent": "affirm",
+          "text": "yes"
+        },
+        {
+          "intent": "affirm",
+          "text": "yep"
+        },
+        {
+          "intent": "affirm",
+          "text": "yeah"
+        },
+        {
+          "intent": "affirm",
+          "text": "indeed"
+        },
+        {
+          "intent": "affirm",
+          "text": "that's right"
+        },
+        {
+          "intent": "affirm",
+          "text": "ok"
+        },
+        {
+          "intent": "affirm",
+          "text": "great"
+        },
+        {
+          "intent": "goodbye",
+          "text": "bye"
+        },
+        {
+          "intent": "goodbye",
+          "text": "goodbye"
+        },
+        {
+          "intent": "goodbye",
+          "text": "good bye"
+        },
+        {
+          "intent": "goodbye",
+          "text": "stop"
+        },
+        {
+          "intent": "goodbye",
+          "text": "end"
+        }
+      ],
+      "composite_entities": [
+        {
+          "composites": [
+            "@carbohydrates",
+            "@protein"
+          ],
+          "name": "meal"
+        }
+      ],
+      "entity_synonyms": [
+        {
+          "synonyms": [
+            "mexico",
+            "mexican"
+          ],
+          "value": "mexican"
+        },
+        {
+          "synonyms": [
+            "china",
+            "chinese"
+          ],
+          "value": "chinese"
+        },
+        {
+          "synonyms": [
+            "india",
+            "indian"
+          ],
+          "value": "indian"
+        },
+        {
+          "synonyms": [
+            "noodle",
+            "noodles"
+          ],
+          "value": "noodles"
+        },
+        {
+          "synonyms": [
+            "egg",
+            "eggs"
+          ],
+          "value": "eggs"
+        }
+      ],
+      "lookup_tables": [
+        {
+          "elements": [
+            "mexico",
+            "mexican",
+            "china",
+            "chinese",
+            "india",
+            "indian"
+          ],
+          "name": "cuisine"
+        },
+        {
+          "elements": [
+            "centre",
+            "west",
+            "central",
+            "north"
+          ],
+          "name": "location"
+        },
+        {
+          "elements": [
+            "rice",
+            "yam",
+            "noodle",
+            "noodles"
+          ],
+          "name": "carbohydrates"
+        },
+        {
+          "elements": [
+            "egg",
+            "eggs",
+            "pork",
+            "chicken"
+          ],
+          "name": "protein"
+        }
+      ],
+      "regex_features": []
+    }
+  }
