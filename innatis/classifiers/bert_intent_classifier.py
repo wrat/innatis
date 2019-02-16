@@ -151,10 +151,10 @@ class BertIntentClassifier(Component):
         example = predict_features[0]
 
         result = self.predict_fn({
-            "input_ids": np.array(example.input_ids).reshape(-1, 128),
-            "input_mask": np.array(example.input_mask).reshape(-1, 128),
+            "input_ids": np.array(example.input_ids).reshape(-1, self.max_seq_length),
+            "input_mask": np.array(example.input_mask).reshape(-1, self.max_seq_length),
             "label_ids": np.array(example.label_id).reshape(-1),
-            "segment_ids": np.array(example.segment_ids).reshape(-1, 128),
+            "segment_ids": np.array(example.segment_ids).reshape(-1, self.max_seq_length),
         })
 
         intent = {"name": None, "confidence": 0.0}
