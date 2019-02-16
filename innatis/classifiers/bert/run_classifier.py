@@ -21,8 +21,8 @@ from __future__ import print_function
 import collections
 import csv
 import os
-from rasa_nlu.classifiers.bert import optimization
-from rasa_nlu.classifiers.bert import tokenization
+from innatis.classifiers.bert import optimization
+from innatis.classifiers.bert import tokenization
 
 import tensorflow as tf
 import tensorflow_hub as hub

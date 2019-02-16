@@ -12,11 +12,9 @@ from rasa_nlu.components import Component
 from rasa_nlu.training_data import Message
 from rasa_nlu.tokenizers import Token
 
-from rasa_nlu.training_data.training_data import TrainingData
-
-from rasa_nlu.classifiers.bert import optimization
-from rasa_nlu.classifiers.bert import tokenization
-from rasa_nlu.classifiers.bert import run_classifier
+from innatis.classifiers.bert import optimization
+from innatis.classifiers.bert import tokenization
+from innatis.classifiers.bert import run_classifier
 
 
 class BertIntentClassifier(Component):
