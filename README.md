@@ -28,7 +28,11 @@ pipeline:
   - name: "tokenizer_whitespace"
   - name: "ner_crf"
   - name: "ner_synonyms"
-  - name: "intent_classifier_bert"
+  - name: "innatis.classifiers.BertIntentClassifier"
+    "batch_size": 64
+    "epochs": 10
+    "learning_rate": 2e-6
+    "max_seq_length": 128
 ```
 
 ### Extractors
