@@ -16,6 +16,10 @@ Then add to your pipeline in your `rasa_config.yml`. Example pipeline can be fou
 
 ## Components
 
+### Classifiers
+
+* `intent_classifier_bert` - Pulls the bert model from TF HUB and pretrains on given data.
+
 ### Extractors
 
 * `composite_entity_extractor` - Given entities extracted by another extractor (`ner_crf` seems to be the best for now), splits them into composite entities, similar to [DialogFlow](https://dialogflow.com/docs/entities/developer-entities#developer_composite).
