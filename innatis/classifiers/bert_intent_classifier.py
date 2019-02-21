@@ -136,9 +136,14 @@ class BertIntentClassifier(Component):
         self.predict_fn = predictor.from_estimator(self.estimator,
                                                    run_classifier.serving_input_fn_builder(self.max_seq_length))
 
+        print("------------------------- DONE TRAINING")
+
+
                                                 
     def process(self, message: Message, **kwargs: Any) -> None:
         """Return the most likely intent and its similarity to the input"""
+
+        print("------------------------- PROCESS")
 
         # Classifier needs this to be non empty, so we set to first label.
         message.data["intent"] = self.label_list[0] 
@@ -149,6 +154,8 @@ class BertIntentClassifier(Component):
 
         # Get first index since we are only classifying text blob at a time.
         example = predict_features[0]
+
+        print("----------------------------- PREDICT")
 
         result = self.predict_fn({
             "input_ids": np.array(example.input_ids).reshape(-1, self.max_seq_length),
@@ -183,6 +190,8 @@ class BertIntentClassifier(Component):
         Return the metadata necessary to load the model again.
         """
 
+        print("------------------------- PERSIST")
+
         try:
             os.makedirs(model_dir)
         except OSError as e:
@@ -215,6 +224,7 @@ class BertIntentClassifier(Component):
         if model_dir and meta.get("model_path"):
             model_path = os.path.normpath(meta.get("model_path"))
 
+            print("------------------------- LOAD")
             predict_fn = predictor.from_saved_model(model_path)
 
             with io.open(os.path.join(
