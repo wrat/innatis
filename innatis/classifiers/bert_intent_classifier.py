@@ -67,6 +67,7 @@ class BertIntentClassifier(Component):
 
     def __init__(self, 
                  component_config=None,
+                 session: Optional['tf.Session'] = None,
                  label_list: Optional[np.ndarray] = None,
                  predict_fn: Optional['Predictor'] = None,
                 ) -> None:
@@ -74,6 +75,7 @@ class BertIntentClassifier(Component):
 
         tf.logging.set_verbosity(tf.logging.INFO)
 
+        self.session = session
         self.label_list = label_list
         self.predict_fn = predict_fn
 
@@ -132,6 +134,8 @@ class BertIntentClassifier(Component):
         # Start training
         self.estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
 
+        self.session = tf.Session()
+
         # Create predictor incase running evaluation
         self.predict_fn = predictor.from_estimator(self.estimator,
                                                    run_classifier.serving_input_fn_builder(self.max_seq_length))
@@ -162,8 +166,7 @@ class BertIntentClassifier(Component):
 
         probabilities = list(result["probabilities"][0])
 
-        sess = tf.Session()
-        with sess.as_default():
+        with self.session.as_default():
             index = tf.argmax(probabilities, axis=0).eval()
             label = self.label_list[index]
             score = float(probabilities[index])
@@ -215,7 +218,10 @@ class BertIntentClassifier(Component):
         if model_dir and meta.get("model_path"):
             model_path = os.path.normpath(meta.get("model_path"))
 
-            predict_fn = predictor.from_saved_model(model_path)
+            graph = tf.Graph()
+            with graph.as_default():
+                sess = tf.Session()
+                predict_fn = predictor.from_saved_model(model_path)
 
             with io.open(os.path.join(
                     model_dir,
@@ -224,6 +230,7 @@ class BertIntentClassifier(Component):
 
             return cls(
                 component_config=meta,
+                session=sess,
                 label_list=label_list,
                 predict_fn=predict_fn
             )
