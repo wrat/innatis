@@ -10,7 +10,7 @@ setup(
                     'tensorflow-hub',
                     'spacy'],
   packages=['innatis', 'innatis.featurizers', 'innatis.extractors'],
-  version='0.4.0',
+  version='0.5.1',
   description='A library of useful custom Rasa components',
   author='CarLabs',
   author_email='blake@carlabs.com',
