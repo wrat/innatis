@@ -114,6 +114,11 @@ class CompositeEntityExtractor(EntityExtractor):
                 relevance_score += 1
         return relevance_score
 
+    def search_string_with_boundary(self, parent, child):
+        if re.search(r"\b" + re.escape(child) + r"\b", parent):
+            return True
+        return False
+
     def merge_two_dicts(self, x, y):
         z = x.copy()
         z.update(y)
@@ -123,8 +128,7 @@ class CompositeEntityExtractor(EntityExtractor):
                                child_name,
                                broad_value):
         for lookup_entry in each_lookup['elements']:
-            find_index = broad_value.find(lookup_entry.lower())
-            if(find_index > -1):
+            if(self.search_string_with_boundary(broad_value, lookup_entry.lower())):
                 return {
                     child_name: lookup_entry
                 }
