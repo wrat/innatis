@@ -1,1 +1,2 @@
 from .composite_entity_extractor import CompositeEntityExtractor
+from .entity_synonyms import EntitySynonymMapper
