@@ -15,7 +15,7 @@ setup(
   name='innatis',
   install_requires=install_requires,
   packages=['innatis', 'innatis.featurizers', 'innatis.extractors'],
-  version='0.5.1',
+  version='0.5.3',
   description='A library of useful custom Rasa components',
   author='CarLabs',
   author_email='blake@carlabs.com',
