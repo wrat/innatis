@@ -14,8 +14,8 @@ install_requires = [
 setup(
   name='innatis',
   install_requires=install_requires,
-  packages=['innatis', 'innatis.featurizers', 'innatis.extractors'],
-  version='0.5.3',
+  packages=['innatis', 'innatis.classifiers', 'innatis.classifiers.bert', 'innatis.featurizers', 'innatis.extractors'],
+  version='0.5.6',
   description='A library of useful custom Rasa components',
   author='CarLabs',
   author_email='blake@carlabs.com',
