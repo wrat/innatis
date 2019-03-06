@@ -6,3 +6,4 @@ word2number==1.1
 rasa_nlu==0.14.3
 tensorflow-hub==0.2.0
 spacy==2.0.18
+editdistance==0.5.2
