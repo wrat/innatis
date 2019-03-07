@@ -12,7 +12,7 @@ _Viribus Innatis_ means "innate abilities" in Latin. It's a joke...
 
 `$ pip install innatis`
 
-Then add to your pipeline in your `rasa_config.yml`. Example pipeline can be found in [`sample_rasa_innatis_config.yml`](sample_rasa_innatis_config.yml).
+Then add to your pipeline in your `rasa_config.yml`. Example pipeline can be found in [`sample_rasa_innatis_config.yml`](sample_configs/sample_rasa_innatis_config.yml).
 
 ## Components
 
@@ -38,6 +38,7 @@ pipeline:
 ### Extractors
 
 * `composite_entity_extractor` - Given entities extracted by another extractor (`ner_crf` seems to be the best for now), splits them into composite entities, similar to [DialogFlow](https://dialogflow.com/docs/entities/developer-entities#developer_composite).
+* EntitySynonymMapper (replaces `ner_synonyms`) - this is the `ner_synonyms` adapted for `composite_entity_extractor`. You most likely need it if you use `composite_entity_extractor`. It replaces the synonyms with the original entities inside composite entities. It can also do fuzzy matching when matching synonyms (disabled by default). See example config: [`config_composite_entities.yml`](sample_configs/config_composite_entities.yml)
 
 ### Featurizers
 
