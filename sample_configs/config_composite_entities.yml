@@ -10,4 +10,6 @@ pipeline:
   intent_tokenization_flag: true
   intent_split_symbol: "."
 - name: "innatis.extractors.CompositeEntityExtractor"
-
+- name: "innatis.extractors.EntitySynonymMapper"
+  fuzzy_matching: true
+  fuzzy_threshold: 0.9

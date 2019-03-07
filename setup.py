@@ -9,18 +9,20 @@ install_requires = [
     "rasa_nlu==0.14.3",
     "tensorflow-hub==0.2.0",
     "spacy==2.0.18",
+    "editdistance~=0.5.2",
 ]
 
 setup(
-  name='innatis',
-  install_requires=install_requires,
-  packages=['innatis', 'innatis.classifiers', 'innatis.classifiers.bert', 'innatis.featurizers', 'innatis.extractors'],
-  version='0.5.6',
-  description='A library of useful custom Rasa components',
-  author='CarLabs',
-  author_email='blake@carlabs.com',
-  url='https://github.com/Revmaker/innatis',
-  download_url='https://github.com/Revmaker/innatis/tarball/0.1',
-  keywords=['rasa', 'nlu', 'components'],
-  classifiers=[]
+    name='innatis',
+    install_requires=install_requires,
+    packages=['innatis', 'innatis.classifiers', 'innatis.classifiers.bert',
+              'innatis.featurizers', 'innatis.extractors'],
+    version='0.5.6',
+    description='A library of useful custom Rasa components',
+    author='CarLabs',
+    author_email='blake@carlabs.com',
+    url='https://github.com/Revmaker/innatis',
+    download_url='https://github.com/Revmaker/innatis/tarball/0.1',
+    keywords=['rasa', 'nlu', 'components'],
+    classifiers=[]
 )
