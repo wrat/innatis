@@ -38,7 +38,7 @@ pipeline:
 ### Extractors
 
 * `composite_entity_extractor` - Given entities extracted by another extractor (`ner_crf` seems to be the best for now), splits them into composite entities, similar to [DialogFlow](https://dialogflow.com/docs/entities/developer-entities#developer_composite).
-* EntitySynonymMapper (replaces `ner_synonyms`) - this is the `ner_synonyms` adapted for `composite_entity_extractor`. You most likely need it if you use `composite_entity_extractor`. It replaces the synonyms with the original entities inside composite entities. It can also do fuzzy matching when matching synonyms (disabled by default). See example config: [`config_composite_entities.yml`](sample_configs/config_composite_entities.yml)
+* EntitySynonymMapper (replaces `ner_synonyms`) - this is the `ner_synonyms` adapted for `composite_entity_extractor`. You most likely need it if you use `composite_entity_extractor`. It replaces the synonyms with the original entities inside composite entities. It can also do fuzzy matching when matching synonyms (enabled by default). See example config: [`config_composite_entities.yml`](sample_configs/config_composite_entities.yml)
 
 ### Featurizers
 
