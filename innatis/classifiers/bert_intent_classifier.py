@@ -167,7 +167,7 @@ class BertIntentClassifier(Component):
         probabilities = list(result["probabilities"][0])
 
         with self.session.as_default():
-            index = tf.argmax(probabilities, axis=0).eval()
+            index = tf.argmax(probabilities, axis=0).eval(session=tf.Session())
             label = self.label_list[index]
             score = float(probabilities[index])
 
