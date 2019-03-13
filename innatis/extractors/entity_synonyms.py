@@ -19,7 +19,7 @@ class EntitySynonymMapper(EntityExtractor):
     provides = ["entities"]
 
     defaults = {
-        "fuzzy_matching": False,
+        "fuzzy_matching": True,
         "fuzzy_threshold": 0.9
     }
 
