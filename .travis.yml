@@ -4,4 +4,8 @@ install:
 python:
   - '3.5'
   - '3.6'
-script: pytest
+script:
+  - python -m rasa_nlu.train -c sample_configs/config_composite_entities.yml \
+        --data data/examples/dialogflow -o models \
+        --fixed_model_name df-agent --project current --verbose
+  - pytest
