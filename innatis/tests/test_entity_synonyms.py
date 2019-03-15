@@ -49,7 +49,7 @@ def test_composite_entity_match():
         "end": 6
     }]
     ent_synonyms = {"chineese": "chinese", "nyc": "New York City"}
-    EntitySynonymMapper(synonyms=ent_synonyms).replace_synonyms(entities)
+    EntitySynonymMapper({"fuzzy_matching": False}, synonyms=ent_synonyms).replace_synonyms(entities)
     assert len(entities) == 2
     # Replaces synonyms with original values
     assert entities[0]["value"]["cuisine"] == "chinese"
