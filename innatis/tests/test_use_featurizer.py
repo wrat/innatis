@@ -1,30 +1,28 @@
-"""
-First run
-
-```sh
-python -m rasa_nlu.train -c sample_configs/config_composite_entities.yml \
-        --data data/examples/dialogflow -o models \
-        --fixed_model_name df-agent --project current --verbose
-```
-
-to train a model on the sample data
-
-"""
 import json
 import pytest
 from innatis.featurizers import UniversalSentenceEncoderFeaturizer
 from rasa_nlu.model import Interpreter
-
+from rasa_nlu import config, train
 
 @pytest.mark.slow
 def test_it_instantiates():
     assert UniversalSentenceEncoderFeaturizer({}) is not None
 
+@pytest.mark.slow
+def test_train_featurizer():
+    (trained, _, _) = train.do_train(
+        config.load('sample_configs/sample_use_featurizer.yml'),
+        data='data/examples/dialogflow',
+        path='models',
+        project='current',
+        fixed_model_name='use-featurizer')
+
+    assert trained.pipeline
 
 @pytest.mark.slow
 def test_use_featurizer():
-    interpreter = Interpreter.load("./models/current/df-agent")
-    message = u'I will like some rice and chicken'
+    interpreter = Interpreter.load("./models/current/use-featurizer")
 
-    result = interpreter.parse(message)
-    print(json.dumps(result, indent=2))
+    assert interpreter.pipeline
+    assert interpreter.parse("hello") is not None
+    assert interpreter.parse("I will like some rice and chicken") is not None
