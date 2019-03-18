@@ -1,0 +1,5 @@
+language: "en"
+
+pipeline:
+- name: "innatis.featurizers.UniversalSentenceEncoderFeaturizer"
+- name: "intent_classifier_tensorflow_embedding"
