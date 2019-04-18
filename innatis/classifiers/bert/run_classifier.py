@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import re
-from innatis.classifiers.bert import optimization
+from innatis.classifiers.bert.optimization import create_optimizer
 from innatis.classifiers.bert.tokenization import convert_to_unicode, FullTokenizer
 from innatis.classifiers.bert.modeling import BertModel
 
@@ -258,7 +258,7 @@ def model_fn_builder(
                 bert_config,
             )
 
-            train_op = optimization.create_optimizer(
+            train_op = create_optimizer(
                 loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu=False
             )
 
@@ -330,8 +330,8 @@ def create_model(
     segment_ids,
     labels,
     num_labels,
-    bert_config=None,
     bert_tfhub_module_handle=None,
+    bert_config=None,
     use_one_hot_embeddings=True,
 ):
     """Creates a classification model."""
