@@ -31,7 +31,6 @@ class BertIntentClassifier(Component):
         "warmup_proportion": 0.1,
         "save_checkpoints_steps": 1000,
         "save_summary_steps": 500,
-        "bert_model": "uncased_L-12_H-768_A-12",
         "bert_tfhub_module_handle": "https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1",
         "checkpoint_dir": "./tmp/bert",
         "checkpoint_remove_before_training": True 
@@ -39,9 +38,7 @@ class BertIntentClassifier(Component):
 
 
     def _load_bert_params(self, config: Dict[Text, Any]) -> None:
-        self.bert_model = config['bert_model']
         self.bert_tfhub_module_handle = config['bert_tfhub_module_handle']
-        self.do_lower_case = self.bert_model.startswith("uncased") 
 
 
     def _load_train_params(self, config: Dict[Text, Any]) -> None:
