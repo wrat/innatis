@@ -10,7 +10,9 @@ from tensorflow.contrib import predictor
 
 from rasa_nlu.components import Component
 from rasa_nlu.training_data import Message
-from innatis.classifiers.bert import run_classifier
+from innatis.classifiers.bert.run_classifier import create_tokenizer_from_hub_module, get_labels, get_train_examples, convert_examples_to_features, model_fn_builder, input_fn_builder, serving_input_fn_builder, get_test_examples
+from innatis.classifiers.bert.tokenization import FullTokenizer
+from innatis.classifiers.bert.modeling import BertConfig
 import logging
 
 logger = logging.getLogger(__name__)
@@ -32,6 +34,7 @@ class BertIntentClassifier(Component):
         "save_checkpoints_steps": 1000,
         "save_summary_steps": 500,
         "bert_tfhub_module_handle": "https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1",
+        "pretrained_model_dir": None,
         "checkpoint_dir": "./tmp/bert",
         "checkpoint_remove_before_training": True 
     }
@@ -39,6 +42,19 @@ class BertIntentClassifier(Component):
 
     def _load_bert_params(self, config: Dict[Text, Any]) -> None:
         self.bert_tfhub_module_handle = config['bert_tfhub_module_handle']
+        self.pretrained_model_dir = config['pretrained_model_dir']
+
+        if self.pretrained_model_dir:
+            dir_files = os.listdir(self.pretrained_model_dir)
+            if all(file not in dir_files for file in ('bert_config.json', 'vocab.txt')):
+                logger.warning("Pretrained model dir configured as '{}' "
+                               "does not contain 'bert_config.json', "
+                               "'vocab.txt' and a model checkpoint.  "
+                               "No pretrained model was loaded.")
+                logger.warning("Using TF Hub module instead.")
+                self.pretrained_model_dir = None
+            else:
+                logger.info("Loading pretrained model from {}".format(self.pretrained_model_dir))
 
 
     def _load_train_params(self, config: Dict[Text, Any]) -> None:
@@ -73,8 +89,16 @@ class BertIntentClassifier(Component):
         self.predict_fn = predict_fn
 
         self._load_params()
-        self.tokenizer = run_classifier.create_tokenizer_from_hub_module(
-            self.bert_tfhub_module_handle) 
+
+        if self.pretrained_model_dir:
+            vocab_file = os.path.join(self.pretrained_model_dir, "vocab.txt")
+            do_lower_case = os.path.basename(self.pretrained_model_dir).startswith("uncased")
+
+            self.tokenizer = FullTokenizer(
+                vocab_file=vocab_file, do_lower_case=do_lower_case)
+        else:
+            self.tokenizer = create_tokenizer_from_hub_module(
+                self.bert_tfhub_module_handle)
 
         self.estimator = None
 
@@ -86,14 +110,14 @@ class BertIntentClassifier(Component):
         if self.checkpoint_remove_before_training and os.path.exists(self.checkpoint_dir):
             shutil.rmtree(self.checkpoint_dir, ignore_errors=True)
 
-        self.label_list = run_classifier.get_labels(training_data)
+        self.label_list = get_labels(training_data)
 
         run_config = tf.estimator.RunConfig(
             model_dir=self.checkpoint_dir,
             save_summary_steps=self.save_summary_steps,
             save_checkpoints_steps=self.save_checkpoints_steps)
         
-        train_examples = run_classifier.get_train_examples(training_data.training_examples)
+        train_examples = get_train_examples(training_data.training_examples)
         num_train_steps = int(len(train_examples) / self.batch_size * self.epochs)
         num_warmup_steps = int(num_train_steps * self.warmup_proportion)
 
@@ -102,27 +126,32 @@ class BertIntentClassifier(Component):
         tf.logging.info("Batch size = %d", self.batch_size)
         tf.logging.info("Num steps = %d", num_train_steps)
         tf.logging.info("Num epochs = %d", self.epochs)
+        train_features = convert_examples_to_features(
+            train_examples, self.label_list, self.max_seq_length, self.tokenizer)
 
-        model_fn = run_classifier.model_fn_builder(
+        if self.pretrained_model_dir:
+            bert_config = BertConfig.from_json_file(os.path.join(self.pretrained_model_dir, "bert_config.json"))
+        else:
+            bert_config = None
+
+        model_fn = model_fn_builder(
             bert_tfhub_module_handle=self.bert_tfhub_module_handle,
             num_labels=len(self.label_list),
             learning_rate=self.learning_rate,
             num_train_steps=num_train_steps,
-            num_warmup_steps=num_warmup_steps)
+            num_warmup_steps=num_warmup_steps,
+            bert_config=bert_config)
+
+        train_input_fn = input_fn_builder(
+            features=train_features,
+            seq_length=self.max_seq_length,
+            is_training=True,
+            drop_remainder=True)
         
         self.estimator = tf.estimator.Estimator(
             model_fn=model_fn,
             config=run_config,
             params={"batch_size": self.batch_size})
-        
-        train_features = run_classifier.convert_examples_to_features(
-            train_examples, self.label_list, self.max_seq_length, self.tokenizer)
-
-        train_input_fn = run_classifier.input_fn_builder(
-            features=train_features,
-            seq_length=self.max_seq_length,
-            is_training=True,
-            drop_remainder=True)
 
         # Start training
         self.estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
@@ -131,7 +160,7 @@ class BertIntentClassifier(Component):
 
         # Create predictor incase running evaluation
         self.predict_fn = predictor.from_estimator(self.estimator,
-                                                   run_classifier.serving_input_fn_builder(self.max_seq_length))
+                                                   serving_input_fn_builder(self.max_seq_length))
 
                                                 
     def process(self, message: Message, **kwargs: Any) -> None:
@@ -140,8 +169,8 @@ class BertIntentClassifier(Component):
         # Classifier needs this to be non empty, so we set to first label.
         message.data["intent"] = self.label_list[0] 
 
-        predict_examples = run_classifier.get_test_examples([message])
-        predict_features = run_classifier.convert_examples_to_features(
+        predict_examples = get_test_examples([message])
+        predict_features = convert_examples_to_features(
             predict_examples, self.label_list, self.max_seq_length, self.tokenizer)
 
         # Get first index since we are only classifying text blob at a time.
@@ -185,7 +214,7 @@ class BertIntentClassifier(Component):
                 raise
 
         model_path = self.estimator.export_savedmodel(model_dir,
-            run_classifier.serving_input_fn_builder(self.max_seq_length))
+            serving_input_fn_builder(self.max_seq_length))
 
         with io.open(os.path.join(
                 model_dir,

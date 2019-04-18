@@ -18,11 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
-import csv
-import os
+import re
 from innatis.classifiers.bert import optimization
-from innatis.classifiers.bert import tokenization
+from innatis.classifiers.bert.tokenization import convert_to_unicode, FullTokenizer
+from innatis.classifiers.bert.modeling import BertModel
 
 import tensorflow as tf
 import tensorflow_hub as hub
@@ -204,68 +203,28 @@ def create_examples(rasa_training_examples, set_type):
     examples = []
     for (i, rasa_example) in enumerate(rasa_training_examples):
         guid = "%s-%s" % (set_type, i)
-        text_a = tokenization.convert_to_unicode(rasa_example.text)
-        label = tokenization.convert_to_unicode(rasa_example.data["intent"])
+        line = convert_to_unicode(rasa_example.text)
+        line = line.strip()
+        text_b = None
+        m = re.match(r"^(.*) \|\|\| (.*)$", line)
+        if m is None:
+            text_a = line
+        else:
+            text_a = m.group(1)
+            text_b = m.group(2)
+        label = convert_to_unicode(rasa_example.data["intent"])
         examples.append(
-            InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
+            InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label))
     return examples
 
 #
 #
 #
 
-def _create_model(bert_tfhub_module_handle, is_predicting, input_ids, input_mask, segment_ids, labels,
-                num_labels):
-    """Creates a classification model."""
-
-    bert_module = hub.Module(
-        bert_tfhub_module_handle,
-        trainable=True)
-    bert_inputs = dict(
-        input_ids=input_ids,
-        input_mask=input_mask,
-        segment_ids=segment_ids)
-    bert_outputs = bert_module(
-        inputs=bert_inputs,
-        signature="tokens",
-        as_dict=True)
-
-    # In the demo, we are doing a simple classification task on the entire
-    # segment.
-    #
-    # If you want to use the token-level output, use
-    # bert_outputs["sequence_output"] instead.
-    output_layer = bert_outputs["pooled_output"]
-
-    hidden_size = output_layer.shape[-1].value
-
-    output_weights = tf.get_variable(
-        "output_weights", [num_labels, hidden_size],
-        initializer=tf.truncated_normal_initializer(stddev=0.02))
-
-    output_bias = tf.get_variable(
-        "output_bias", [num_labels], initializer=tf.zeros_initializer())
-
-    with tf.variable_scope("loss"):
-        output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
-
-        logits = tf.matmul(output_layer, output_weights, transpose_b=True)
-        logits = tf.nn.bias_add(logits, output_bias)
-        log_probs = tf.nn.log_softmax(logits, axis=-1)
-
-        one_hot_labels = tf.one_hot(labels, depth=num_labels, dtype=tf.float32)
-
-        predicted_labels = tf.squeeze(tf.argmax(log_probs, axis=-1, output_type=tf.int32))
-
-        if is_predicting:
-            return (predicted_labels, log_probs)
-
-        per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
-        loss = tf.reduce_mean(per_example_loss)
-        return (loss, predicted_labels, log_probs)
 
 
-def model_fn_builder(bert_tfhub_module_handle, num_labels, learning_rate, num_train_steps, num_warmup_steps):
+
+def model_fn_builder(bert_tfhub_module_handle, num_labels, learning_rate, num_train_steps, num_warmup_steps, bert_config):
     """Returns `model_fn` closure for TPUEstimator."""
 
     def model_fn(features, labels, mode, params):  # pylint: disable=unused-argument
@@ -279,8 +238,8 @@ def model_fn_builder(bert_tfhub_module_handle, num_labels, learning_rate, num_tr
 
         if not is_predicting:
 
-            (loss, predicted_labels, log_probs) = _create_model(
-                bert_tfhub_module_handle, is_predicting, input_ids, input_mask, segment_ids, label_ids, num_labels)
+            (loss, predicted_labels, log_probs) = create_model(is_predicting, input_ids, input_mask, segment_ids, label_ids, num_labels,
+                bert_tfhub_module_handle, bert_config)
 
             train_op = optimization.create_optimizer(
                 loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu=False)
@@ -339,17 +298,75 @@ def model_fn_builder(bert_tfhub_module_handle, num_labels, learning_rate, num_tr
                     loss=loss,
                     eval_metric_ops=eval_metrics)
         else:
-            (predicted_labels, log_probs) = _create_model(
-                bert_tfhub_module_handle, is_predicting, input_ids, input_mask, segment_ids, label_ids, num_labels)
 
-            predictions = {
-                'probabilities': log_probs,
-                #'labels': predicted_labels
-            }
+            (predicted_labels, log_probs) = create_model(is_predicting, input_ids, input_mask, segment_ids, label_ids, num_labels,
+            bert_tfhub_module_handle, bert_config)
+
+            predictions = {'probabilities': log_probs}
 
             return tf.estimator.EstimatorSpec(mode, predictions=predictions)
 
     return model_fn
+
+def create_model(is_predicting, input_ids, input_mask, segment_ids,
+                 labels, num_labels, bert_config=None, bert_tfhub_module_handle=None, use_one_hot_embeddings=True):
+  """Creates a classification model."""
+
+  if bert_config:
+
+      model = BertModel(
+          config=bert_config,
+          is_training=not is_predicting,
+          input_ids=input_ids,
+          input_mask=input_mask,
+          token_type_ids=segment_ids,
+          use_one_hot_embeddings=use_one_hot_embeddings)
+
+      output_layer = model.get_pooled_output()
+
+  else:
+      bert_module = hub.Module(
+          bert_tfhub_module_handle,
+          trainable=True)
+      bert_inputs = dict(
+          input_ids=input_ids,
+          input_mask=input_mask,
+          segment_ids=segment_ids)
+      bert_outputs = bert_module(
+          inputs=bert_inputs,
+          signature="tokens",
+          as_dict=True)
+
+      output_layer = bert_outputs["pooled_output"]
+
+  hidden_size = output_layer.shape[-1].value
+
+  output_weights = tf.get_variable(
+      "output_weights", [num_labels, hidden_size],
+      initializer=tf.truncated_normal_initializer(stddev=0.02))
+
+  output_bias = tf.get_variable(
+      "output_bias", [num_labels], initializer=tf.zeros_initializer())
+
+  with tf.variable_scope("loss"):
+    if not is_predicting:
+      # I.e., 0.1 dropout
+      output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
+
+    logits = tf.matmul(output_layer, output_weights, transpose_b=True)
+    logits = tf.nn.bias_add(logits, output_bias)
+    log_probs = tf.nn.log_softmax(logits, axis=-1)
+
+    one_hot_labels = tf.one_hot(labels, depth=num_labels, dtype=tf.float32)
+
+    predicted_labels = tf.squeeze(tf.argmax(log_probs, axis=-1, output_type=tf.int32))
+
+    if is_predicting:
+        return (predicted_labels, log_probs)
+
+    per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
+    loss = tf.reduce_mean(per_example_loss)
+    return (loss, predicted_labels, log_probs)
 
 
 def create_tokenizer_from_hub_module(bert_tfhub_module_handle):
@@ -360,7 +377,7 @@ def create_tokenizer_from_hub_module(bert_tfhub_module_handle):
         with tf.Session() as sess:
             vocab_file, do_lower_case = sess.run([tokenization_info["vocab_file"],
                                                     tokenization_info["do_lower_case"]])
-    return tokenization.FullTokenizer(
+    return FullTokenizer(
         vocab_file=vocab_file, do_lower_case=do_lower_case)
 
 #
