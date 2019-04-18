@@ -1,7 +1,7 @@
 import io
 import os
 import pickle
-from typing import Any, Optional, Dict, Text, List, Tuple
+from typing import Any, Optional, Dict, Text
 import numpy as np
 import shutil
 
@@ -10,12 +10,10 @@ from tensorflow.contrib import predictor
 
 from rasa_nlu.components import Component
 from rasa_nlu.training_data import Message
-from rasa_nlu.tokenizers import Token
-
-from innatis.classifiers.bert import optimization
-from innatis.classifiers.bert import tokenization
 from innatis.classifiers.bert import run_classifier
+import logging
 
+logger = logging.getLogger(__name__)
 
 class BertIntentClassifier(Component):
     """Intent classifier using BERT.
@@ -26,14 +24,13 @@ class BertIntentClassifier(Component):
     provides = ["intent", "intent_ranking"]
 
     defaults = {
-        "batch_size": 42, # 128
+        "batch_size": 64,
         "epochs": 2,
         "learning_rate": 2e-5,
         "max_seq_length": 128, 
         "warmup_proportion": 0.1,
         "save_checkpoints_steps": 1000,
         "save_summary_steps": 500,
-        "iterations_per_loop": 1000,
         "bert_model": "uncased_L-12_H-768_A-12",
         "bert_tfhub_module_handle": "https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1",
         "checkpoint_dir": "./tmp/bert",
@@ -55,7 +52,6 @@ class BertIntentClassifier(Component):
         self.warmup_proportion = config['warmup_proportion']
         self.save_checkpoints_steps = config['save_checkpoints_steps']
         self.save_summary_steps = config['save_summary_steps']
-        self.iterations_per_loop = config['iterations_per_loop']
         self.checkpoint_dir = config['checkpoint_dir']
         self.checkpoint_remove_before_training = config['checkpoint_remove_before_training']
 
@@ -161,10 +157,7 @@ class BertIntentClassifier(Component):
             "segment_ids": np.array(example.segment_ids).reshape(-1, self.max_seq_length),
         })
 
-        intent = {"name": None, "confidence": 0.0}
-        intent_ranking = []
-
-        probabilities = list(result["probabilities"][0])
+        probabilities = list(np.exp(result["probabilities"])[0])
 
         with self.session.as_default():
             index = tf.argmax(probabilities, axis=0).eval()
