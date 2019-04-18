@@ -26,6 +26,7 @@ from innatis.classifiers.bert.modeling import BertModel
 import tensorflow as tf
 import tensorflow_hub as hub
 
+
 class InputExample(object):
     """A single training/test example for simple sequence classification."""
 
@@ -63,12 +64,9 @@ class PaddingInputExample(object):
 class InputFeatures(object):
     """A single set of features of data."""
 
-    def __init__(self,
-                input_ids,
-                input_mask,
-                segment_ids,
-                label_id,
-                is_real_example=True):
+    def __init__(
+        self, input_ids, input_mask, segment_ids, label_id, is_real_example=True
+    ):
         self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
@@ -76,8 +74,7 @@ class InputFeatures(object):
         self.is_real_example = is_real_example
 
 
-def convert_single_example(ex_index, example, label_list, max_seq_length,
-                           tokenizer):
+def convert_single_example(ex_index, example, label_list, max_seq_length, tokenizer):
     """Converts a single `InputExample` into a single `InputFeatures`."""
     if isinstance(example, PaddingInputExample):
         return InputFeatures(
@@ -85,7 +82,8 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
             input_mask=[0] * max_seq_length,
             segment_ids=[0] * max_seq_length,
             label_id=0,
-            is_real_example=False)
+            is_real_example=False,
+        )
 
     label_map = {}
     for (i, label) in enumerate(label_list):
@@ -104,7 +102,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
     else:
         # Account for [CLS] and [SEP] with "- 2"
         if len(tokens_a) > max_seq_length - 2:
-            tokens_a = tokens_a[0:(max_seq_length - 2)]
+            tokens_a = tokens_a[0 : (max_seq_length - 2)]
 
     # The convention in BERT is:
     # (a) For sequence pairs:
@@ -175,12 +173,15 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
         input_mask=input_mask,
         segment_ids=segment_ids,
         label_id=label_id,
-        is_real_example=True)
+        is_real_example=True,
+    )
     return feature
+
 
 #
 #
 #
+
 
 def get_train_examples(training_examples):
     """See base class."""
@@ -194,8 +195,9 @@ def get_test_examples(training_examples):
 
 def get_labels(training_data):
     """See base class."""
-    return sorted(set([example.get("intent")
-                            for example in training_data.intent_examples]))
+    return sorted(
+        set([example.get("intent") for example in training_data.intent_examples])
+    )
 
 
 def create_examples(rasa_training_examples, set_type):
@@ -214,17 +216,24 @@ def create_examples(rasa_training_examples, set_type):
             text_b = m.group(2)
         label = convert_to_unicode(rasa_example.data["intent"])
         examples.append(
-            InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label))
+            InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label)
+        )
     return examples
 
+
 #
 #
 #
 
 
-
-
-def model_fn_builder(bert_tfhub_module_handle, num_labels, learning_rate, num_train_steps, num_warmup_steps, bert_config):
+def model_fn_builder(
+    bert_tfhub_module_handle,
+    num_labels,
+    learning_rate,
+    num_train_steps,
+    num_warmup_steps,
+    bert_config,
+):
     """Returns `model_fn` closure for TPUEstimator."""
 
     def model_fn(features, labels, mode, params):  # pylint: disable=unused-argument
@@ -234,46 +243,41 @@ def model_fn_builder(bert_tfhub_module_handle, num_labels, learning_rate, num_tr
         segment_ids = features["segment_ids"]
         label_ids = features["label_ids"]
 
-        is_predicting = (mode == tf.estimator.ModeKeys.PREDICT)
+        is_predicting = mode == tf.estimator.ModeKeys.PREDICT
 
         if not is_predicting:
 
-            (loss, predicted_labels, log_probs) = create_model(is_predicting, input_ids, input_mask, segment_ids, label_ids, num_labels,
-                bert_tfhub_module_handle, bert_config)
+            (loss, predicted_labels, log_probs) = create_model(
+                is_predicting,
+                input_ids,
+                input_mask,
+                segment_ids,
+                label_ids,
+                num_labels,
+                bert_tfhub_module_handle,
+                bert_config,
+            )
 
             train_op = optimization.create_optimizer(
-                loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu=False)
+                loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu=False
+            )
 
             accuracy = tf.metrics.accuracy(label_ids, predicted_labels)
-            logging_hook = tf.train.LoggingTensorHook({"loss" : loss, "accuracy": accuracy[1]}, every_n_iter=1)
+            logging_hook = tf.train.LoggingTensorHook(
+                {"loss": loss, "accuracy": accuracy[1]}, every_n_iter=1
+            )
 
-            # Calculate evaluation metrics. 
+            # Calculate evaluation metrics.
             def metric_fn(label_ids, predicted_labels):
                 accuracy = tf.metrics.accuracy(label_ids, predicted_labels)
-                f1_score = tf.contrib.metrics.f1_score(
-                    label_ids,
-                    predicted_labels)
-                auc = tf.metrics.auc(
-                    label_ids,
-                    predicted_labels)
-                recall = tf.metrics.recall(
-                    label_ids,
-                    predicted_labels)
-                precision = tf.metrics.precision(
-                    label_ids,
-                    predicted_labels) 
-                true_pos = tf.metrics.true_positives(
-                    label_ids,
-                    predicted_labels)
-                true_neg = tf.metrics.true_negatives(
-                    label_ids,
-                    predicted_labels)   
-                false_pos = tf.metrics.false_positives(
-                    label_ids,
-                    predicted_labels)  
-                false_neg = tf.metrics.false_negatives(
-                    label_ids,
-                    predicted_labels)
+                f1_score = tf.contrib.metrics.f1_score(label_ids, predicted_labels)
+                auc = tf.metrics.auc(label_ids, predicted_labels)
+                recall = tf.metrics.recall(label_ids, predicted_labels)
+                precision = tf.metrics.precision(label_ids, predicted_labels)
+                true_pos = tf.metrics.true_positives(label_ids, predicted_labels)
+                true_neg = tf.metrics.true_negatives(label_ids, predicted_labels)
+                false_pos = tf.metrics.false_positives(label_ids, predicted_labels)
+                false_neg = tf.metrics.false_negatives(label_ids, predicted_labels)
                 return {
                     "eval_accuracy": accuracy,
                     "f1_score": f1_score,
@@ -283,90 +287,110 @@ def model_fn_builder(bert_tfhub_module_handle, num_labels, learning_rate, num_tr
                     "true_positives": true_pos,
                     "true_negatives": true_neg,
                     "false_positives": false_pos,
-                    "false_negatives": false_neg
+                    "false_negatives": false_neg,
                 }
 
             eval_metrics = metric_fn(label_ids, predicted_labels)
 
             if mode == tf.estimator.ModeKeys.TRAIN:
-                return tf.estimator.EstimatorSpec(mode=mode,
-                loss=loss,
-                train_op=train_op,
-                training_hooks= [logging_hook])
-            else:
-                return tf.estimator.EstimatorSpec(mode=mode,
+                return tf.estimator.EstimatorSpec(
+                    mode=mode,
                     loss=loss,
-                    eval_metric_ops=eval_metrics)
+                    train_op=train_op,
+                    training_hooks=[logging_hook],
+                )
+            else:
+                return tf.estimator.EstimatorSpec(
+                    mode=mode, loss=loss, eval_metric_ops=eval_metrics
+                )
         else:
 
-            (predicted_labels, log_probs) = create_model(is_predicting, input_ids, input_mask, segment_ids, label_ids, num_labels,
-            bert_tfhub_module_handle, bert_config)
+            (predicted_labels, log_probs) = create_model(
+                is_predicting,
+                input_ids,
+                input_mask,
+                segment_ids,
+                label_ids,
+                num_labels,
+                bert_tfhub_module_handle,
+                bert_config,
+            )
 
-            predictions = {'probabilities': log_probs}
+            predictions = {"probabilities": log_probs}
 
             return tf.estimator.EstimatorSpec(mode, predictions=predictions)
 
     return model_fn
 
-def create_model(is_predicting, input_ids, input_mask, segment_ids,
-                 labels, num_labels, bert_config=None, bert_tfhub_module_handle=None, use_one_hot_embeddings=True):
-  """Creates a classification model."""
 
-  if bert_config:
+def create_model(
+    is_predicting,
+    input_ids,
+    input_mask,
+    segment_ids,
+    labels,
+    num_labels,
+    bert_config=None,
+    bert_tfhub_module_handle=None,
+    use_one_hot_embeddings=True,
+):
+    """Creates a classification model."""
 
-      model = BertModel(
-          config=bert_config,
-          is_training=not is_predicting,
-          input_ids=input_ids,
-          input_mask=input_mask,
-          token_type_ids=segment_ids,
-          use_one_hot_embeddings=use_one_hot_embeddings)
+    if bert_config:
 
-      output_layer = model.get_pooled_output()
+        model = BertModel(
+            config=bert_config,
+            is_training=not is_predicting,
+            input_ids=input_ids,
+            input_mask=input_mask,
+            token_type_ids=segment_ids,
+            use_one_hot_embeddings=use_one_hot_embeddings,
+        )
 
-  else:
-      bert_module = hub.Module(
-          bert_tfhub_module_handle,
-          trainable=True)
-      bert_inputs = dict(
-          input_ids=input_ids,
-          input_mask=input_mask,
-          segment_ids=segment_ids)
-      bert_outputs = bert_module(
-          inputs=bert_inputs,
-          signature="tokens",
-          as_dict=True)
+        output_layer = model.get_pooled_output()
 
-      output_layer = bert_outputs["pooled_output"]
+    else:
+        bert_module = hub.Module(bert_tfhub_module_handle, trainable=True)
+        bert_inputs = dict(
+            input_ids=input_ids, input_mask=input_mask, segment_ids=segment_ids
+        )
+        bert_outputs = bert_module(inputs=bert_inputs, signature="tokens", as_dict=True)
 
-  hidden_size = output_layer.shape[-1].value
+        output_layer = bert_outputs["pooled_output"]
 
-  output_weights = tf.get_variable(
-      "output_weights", [num_labels, hidden_size],
-      initializer=tf.truncated_normal_initializer(stddev=0.02))
+    hidden_size = output_layer.shape[-1].value
 
-  output_bias = tf.get_variable(
-      "output_bias", [num_labels], initializer=tf.zeros_initializer())
+    output_weights = tf.get_variable(
+        "output_weights",
+        [num_labels, hidden_size],
+        initializer=tf.truncated_normal_initializer(stddev=0.02),
+    )
 
-  with tf.variable_scope("loss"):
-    if not is_predicting:
-      # I.e., 0.1 dropout
-      output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
+    output_bias = tf.get_variable(
+        "output_bias", [num_labels], initializer=tf.zeros_initializer()
+    )
 
-    logits = tf.matmul(output_layer, output_weights, transpose_b=True)
-    logits = tf.nn.bias_add(logits, output_bias)
-    log_probs = tf.nn.log_softmax(logits, axis=-1)
+    with tf.variable_scope("loss"):
+        if not is_predicting:
+            # I.e., 0.1 dropout
+            output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
 
-    one_hot_labels = tf.one_hot(labels, depth=num_labels, dtype=tf.float32)
+        logits = tf.matmul(output_layer, output_weights, transpose_b=True)
+        logits = tf.nn.bias_add(logits, output_bias)
+        log_probs = tf.nn.log_softmax(logits, axis=-1)
 
-    predicted_labels = tf.squeeze(tf.argmax(log_probs, axis=-1, output_type=tf.int32))
+        one_hot_labels = tf.one_hot(labels, depth=num_labels, dtype=tf.float32)
 
-    if is_predicting:
-        return (predicted_labels, log_probs)
+        predicted_labels = tf.squeeze(
+            tf.argmax(log_probs, axis=-1, output_type=tf.int32)
+        )
 
-    per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
-    loss = tf.reduce_mean(per_example_loss)
-    return (loss, predicted_labels, log_probs)
+        if is_predicting:
+            return (predicted_labels, log_probs)
+
+        per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
+        loss = tf.reduce_mean(per_example_loss)
+        return (loss, predicted_labels, log_probs)
 
 
 def create_tokenizer_from_hub_module(bert_tfhub_module_handle):
@@ -375,33 +399,42 @@ def create_tokenizer_from_hub_module(bert_tfhub_module_handle):
         bert_module = hub.Module(bert_tfhub_module_handle)
         tokenization_info = bert_module(signature="tokenization_info", as_dict=True)
         with tf.Session() as sess:
-            vocab_file, do_lower_case = sess.run([tokenization_info["vocab_file"],
-                                                    tokenization_info["do_lower_case"]])
-    return FullTokenizer(
-        vocab_file=vocab_file, do_lower_case=do_lower_case)
+            vocab_file, do_lower_case = sess.run(
+                [tokenization_info["vocab_file"], tokenization_info["do_lower_case"]]
+            )
+    return FullTokenizer(vocab_file=vocab_file, do_lower_case=do_lower_case)
+
 
 #
 #
 #
+
 
 def serving_input_fn_builder(max_seq_length):
     def serving_input_fn():
-        label_ids = tf.placeholder(tf.int32, [None], name='label_ids')
-        input_ids = tf.placeholder(tf.int32, [None, max_seq_length], name='input_ids')
-        input_mask = tf.placeholder(tf.int32, [None, max_seq_length], name='input_mask')
-        segment_ids = tf.placeholder(tf.int32, [None, max_seq_length], name='segment_ids')
-        input_fn = tf.estimator.export.build_raw_serving_input_receiver_fn({
-            'label_ids': label_ids,
-            'input_ids': input_ids,
-            'input_mask': input_mask,
-            'segment_ids': segment_ids,
-        })()
+        label_ids = tf.placeholder(tf.int32, [None], name="label_ids")
+        input_ids = tf.placeholder(tf.int32, [None, max_seq_length], name="input_ids")
+        input_mask = tf.placeholder(tf.int32, [None, max_seq_length], name="input_mask")
+        segment_ids = tf.placeholder(
+            tf.int32, [None, max_seq_length], name="segment_ids"
+        )
+        input_fn = tf.estimator.export.build_raw_serving_input_receiver_fn(
+            {
+                "label_ids": label_ids,
+                "input_ids": input_ids,
+                "input_mask": input_mask,
+                "segment_ids": segment_ids,
+            }
+        )()
         return input_fn
+
     return serving_input_fn
+
 
 #
 #
 #
+
 
 def _truncate_seq_pair(tokens_a, tokens_b, max_length):
     """Truncates a sequence pair in place to the maximum length."""
@@ -445,24 +478,22 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
         # This is for demo purposes and does NOT scale to large data sets. We do
         # not use Dataset.from_generator() because that uses tf.py_func which is
         # not TPU compatible. The right way to load data is with TFRecordReader.
-        d = tf.data.Dataset.from_tensor_slices({
-            "input_ids":
-                tf.constant(
-                    all_input_ids, shape=[num_examples, seq_length],
-                    dtype=tf.int32),
-            "input_mask":
-                tf.constant(
-                    all_input_mask,
-                    shape=[num_examples, seq_length],
-                    dtype=tf.int32),
-            "segment_ids":
-                tf.constant(
-                    all_segment_ids,
-                    shape=[num_examples, seq_length],
-                    dtype=tf.int32),
-            "label_ids":
-                tf.constant(all_label_ids, shape=[num_examples], dtype=tf.int32),
-        })
+        d = tf.data.Dataset.from_tensor_slices(
+            {
+                "input_ids": tf.constant(
+                    all_input_ids, shape=[num_examples, seq_length], dtype=tf.int32
+                ),
+                "input_mask": tf.constant(
+                    all_input_mask, shape=[num_examples, seq_length], dtype=tf.int32
+                ),
+                "segment_ids": tf.constant(
+                    all_segment_ids, shape=[num_examples, seq_length], dtype=tf.int32
+                ),
+                "label_ids": tf.constant(
+                    all_label_ids, shape=[num_examples], dtype=tf.int32
+                ),
+            }
+        )
 
         if is_training:
             d = d.repeat()
@@ -474,12 +505,12 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
     return input_fn
 
 
-def convert_examples_to_features(examples, label_list, max_seq_length,
-                                 tokenizer):
+def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer):
     """Convert a set of `InputExample`s to a list of `InputFeatures`."""
     features = []
     for (ex_index, example) in enumerate(examples):
-        feature = convert_single_example(ex_index, example, label_list,
-                                        max_seq_length, tokenizer)
+        feature = convert_single_example(
+            ex_index, example, label_list, max_seq_length, tokenizer
+        )
         features.append(feature)
     return features
