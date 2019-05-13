@@ -29,10 +29,9 @@ pipeline:
   - name: "ner_crf"
   - name: "ner_synonyms"
   - name: "innatis.classifiers.BertIntentClassifier"
-    "batch_size": 64
-    "epochs": 10
-    "learning_rate": 2e-6
-    "max_seq_length": 128
+    pretrained_model_dir: '/path/to/uncased_L-24_H-1024_A-16'
+    epochs: 10
+    batch_size: 64
 ```
 
 ### Extractors
@@ -68,3 +67,5 @@ $ python ir_from_pipfile.py | pbcopy
 
 # that array is copied; paste it into setup.py
 ```
+
+Also, please manually bump the version in a semver-ish way.
