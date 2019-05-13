@@ -1,0 +1,9 @@
+language: en
+pipeline:
+  - name: "tokenizer_whitespace"
+  - name: "ner_crf"
+  - name: "ner_synonyms"
+  - name: "innatis.classifiers.BertIntentClassifier"
+    pretrained_model_dir: '/path/to/uncased_L-24_H-1024_A-16'
+    epochs: 10
+    batch_size: 64
