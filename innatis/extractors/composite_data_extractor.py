@@ -13,23 +13,27 @@ from typing import Dict
 from typing import Optional
 from typing import Text
 
-from rasa_nlu import utils
+from rasa.nlu import utils
 
-from rasa_nlu.train import create_argument_parser
-from rasa_nlu.training_data.loading import _guess_format
+#from rasa import create_argument_parser
+from rasa.nlu.training_data.loading import _guess_format
 
-from rasa_nlu.training_data.formats import DialogflowReader
-from rasa_nlu.training_data.formats.dialogflow import DIALOGFLOW_ENTITIES
+from rasa.nlu.training_data.formats import DialogflowReader
+from rasa.nlu.training_data.formats.dialogflow import \
+    DIALOGFLOW_ENTITIES
 
-RASA_NLU = "rasa_nlu"
+rasa_nlu = "rasa.nlu"
 
 class CompositeDataExtractor():
 
-    def get_data(self, language):
+    def get_data(self,train_data, language):
         lookup_tables = []
         composite_entities = []
 
-        cmdline_args = create_argument_parser().parse_args()
+        #cmdline_args = create_argument_parser().parse_args()
+        import pdb
+        pdb.set_trace()
+        print(train_data)
         files = utils.list_files(cmdline_args.data)
 
         for file in files:
@@ -48,8 +52,8 @@ class CompositeDataExtractor():
                 if(composite_entity):
                     composite_entities.append(composite_entity)
 
-            if fformat == RASA_NLU:
-                rasa_nlu_data = file_content['rasa_nlu_data']
+            if fformat == rasa_nlu:
+                rasa_nlu_data = file_content['rasa.nlu_data']
                 composite_entities = rasa_nlu_data['composite_entities']
                 lookup_tables = rasa_nlu_data['lookup_tables']
 

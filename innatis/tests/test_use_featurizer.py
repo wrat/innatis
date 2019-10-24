@@ -1,8 +1,8 @@
 import json
 import pytest
 from innatis.featurizers import UniversalSentenceEncoderFeaturizer
-from rasa_nlu.model import Interpreter
-from rasa_nlu import config, train
+from rasa.nlu.model import Interpreter
+from rasa.nlu import config, train
 
 @pytest.mark.slow
 def test_it_instantiates():

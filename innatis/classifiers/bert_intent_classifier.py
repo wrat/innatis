@@ -8,8 +8,8 @@ import shutil
 import tensorflow as tf
 from tensorflow.contrib import predictor
 
-from rasa_nlu.components import Component
-from rasa_nlu.training_data import Message
+from rasa.nlu.components import Component
+from rasa.nlu.training_data import Message
 from innatis.classifiers.bert.run_classifier import (
     create_tokenizer_from_hub_module,
     get_labels,
@@ -235,7 +235,7 @@ class BertIntentClassifier(Component):
         message.set("intent", intent, add_to_output=True)
         message.set("intent_ranking", intent_ranking, add_to_output=True)
 
-    def persist(self, model_dir: Text) -> Dict[Text, Any]:
+    def persist(self, file_name: Text,model_dir: Text) -> Dict[Text, Any]:
         """Persist this model into the passed directory.
 
         Return the metadata necessary to load the model again.
@@ -254,24 +254,27 @@ class BertIntentClassifier(Component):
             model_dir, serving_input_fn_builder(self.max_seq_length)
         )
 
-        with io.open(os.path.join(model_dir, self.name + "_label_list.pkl"), "wb") as f:
+        with io.open(os.path.join(model_dir, file_name + "_label_list.pkl"), "wb") as f:
             pickle.dump(self.label_list, f)
 
-        return {"model_path": model_path.decode("UTF-8")}
+        return {"model_path": model_path.decode("UTF-8"),"file": file_name}
 
     @classmethod
     def load(
         cls,
+        meta: Dict[Text, Any],
         model_dir: Text = None,
         model_metadata: "Metadata" = None,
         cached_component: Optional["BertIntentClassifier"] = None,
         **kwargs: Any
     ) -> "BertIntentClassifier":
 
-        meta = model_metadata.for_component(cls.name)
+        file_name = meta.get("file")
+        #meta = model_metadata.for_component(cls.name)
+        temp_path = meta.get("model_path").split('/')[-1]
 
         if model_dir and meta.get("model_path"):
-            model_path = os.path.normpath(meta.get("model_path"))
+            model_path = os.path.join(model_dir,temp_path)
 
             graph = tf.Graph()
             with graph.as_default():
@@ -279,7 +282,7 @@ class BertIntentClassifier(Component):
                 predict_fn = predictor.from_saved_model(model_path)
 
             with io.open(
-                os.path.join(model_dir, cls.name + "_label_list.pkl"), "rb"
+                os.path.join(model_dir, file_name + "_label_list.pkl"), "rb"
             ) as f:
                 label_list = pickle.load(f)
 
@@ -297,3 +300,4 @@ class BertIntentClassifier(Component):
                 "".format(os.path.abspath(model_dir))
             )
             return cls(component_config=meta)
+

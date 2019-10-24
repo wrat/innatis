@@ -21,10 +21,10 @@ from typing import Dict
 from typing import Optional
 from typing import Text
 
-from rasa_nlu import utils
-from rasa_nlu.extractors import EntityExtractor
-from rasa_nlu.training_data import Message, TrainingData
-from rasa_nlu.utils import write_json_to_file
+from rasa.nlu import utils
+from rasa.nlu.extractors import EntityExtractor
+from rasa.nlu.training_data import Message, TrainingData
+from rasa.nlu.utils import write_json_to_file
 
 from innatis.extractors.composite_data_extractor import CompositeDataExtractor
 
@@ -59,7 +59,7 @@ class CompositeEntityExtractor(EntityExtractor):
     def train(self, training_data, cfg, **kwargs):
         compositeDataExtractor = CompositeDataExtractor()
         lookup_tables, composite_entities = compositeDataExtractor.get_data(
-            language=cfg.language)
+            training_data,language=cfg.language)
         self.add_lookup_tables(lookup_tables)
         self.composite_entities['composite_entities'] = composite_entities
 

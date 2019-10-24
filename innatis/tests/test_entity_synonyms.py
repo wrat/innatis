@@ -1,5 +1,5 @@
 from innatis.extractors import EntitySynonymMapper
-from rasa_nlu.model import Metadata
+from rasa.nlu.model import Metadata
 import pytest
 
 def test_string_value_match():

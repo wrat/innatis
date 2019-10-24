@@ -9,7 +9,7 @@ Thanks Scalable Minds - we should probably tell them about this
 https://scalableminds.com/#contact-us
 """
 
-from rasa_nlu.featurizers import Featurizer
+from rasa.nlu.featurizers import Featurizer
 
 import tensorflow_hub as hub
 import tensorflow as tf
